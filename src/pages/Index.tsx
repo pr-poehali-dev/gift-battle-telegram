@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +53,8 @@ const RARITY_BG = {
   divine: 'bg-rarity-divine/20 border-rarity-divine'
 };
 
+const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'divine'];
+
 const CASES: Case[] = [
   { id: '1', name: 'Бедолага', price: 10, category: 'normal', icon: '😢', description: 'Простой кейс для начинающих' },
   { id: '2', name: 'Бомж', price: 50, category: 'normal', icon: '🎒', description: 'Может повезти!' },
@@ -87,43 +89,245 @@ const CASES: Case[] = [
   { id: '31', name: 'Ультра', price: 10000, category: 'normal', icon: '⚡', description: 'Максимальная мощь' }
 ];
 
-const SAMPLE_GIFTS: Gift[] = [
+const ALL_GIFTS: Gift[] = [
   { id: '1', name: 'Простой подарок', rarity: 'common', value: 5, icon: '🎁' },
-  { id: '2', name: 'Цветок', rarity: 'uncommon', value: 25, icon: '🌹' },
-  { id: '3', name: 'Шоколад', rarity: 'rare', value: 50, icon: '🍫' },
-  { id: '4', name: 'Плюшевый мишка', rarity: 'epic', value: 150, icon: '🧸' },
-  { id: '5', name: 'Золотая звезда', rarity: 'legendary', value: 500, icon: '⭐' },
-  { id: '6', name: 'Бриллиант', rarity: 'mythic', value: 1500, icon: '💎' },
-  { id: '7', name: 'Феникс', rarity: 'exotic', value: 5000, icon: '🔥' },
-  { id: '8', name: 'Корона богов', rarity: 'divine', value: 15000, icon: '👑' }
+  { id: '2', name: 'Коробка конфет', rarity: 'common', value: 8, icon: '🍬' },
+  { id: '3', name: 'Открытка', rarity: 'common', value: 10, icon: '💌' },
+  { id: '4', name: 'Цветок', rarity: 'uncommon', value: 25, icon: '🌹' },
+  { id: '5', name: 'Букет', rarity: 'uncommon', value: 30, icon: '💐' },
+  { id: '6', name: 'Свеча', rarity: 'uncommon', value: 35, icon: '🕯️' },
+  { id: '7', name: 'Шоколад', rarity: 'rare', value: 50, icon: '🍫' },
+  { id: '8', name: 'Торт', rarity: 'rare', value: 60, icon: '🎂' },
+  { id: '9', name: 'Духи', rarity: 'rare', value: 70, icon: '🌸' },
+  { id: '10', name: 'Плюшевый мишка', rarity: 'epic', value: 150, icon: '🧸' },
+  { id: '11', name: 'Золотое кольцо', rarity: 'epic', value: 180, icon: '💍' },
+  { id: '12', name: 'Часы', rarity: 'epic', value: 200, icon: '⌚' },
+  { id: '13', name: 'Золотая звезда', rarity: 'legendary', value: 500, icon: '⭐' },
+  { id: '14', name: 'Золотая медаль', rarity: 'legendary', value: 550, icon: '🥇' },
+  { id: '15', name: 'Трофей', rarity: 'legendary', value: 600, icon: '🏆' },
+  { id: '16', name: 'Бриллиант', rarity: 'mythic', value: 1500, icon: '💎' },
+  { id: '17', name: 'Сапфир', rarity: 'mythic', value: 1600, icon: '💠' },
+  { id: '18', name: 'Изумруд', rarity: 'mythic', value: 1700, icon: '🔷' },
+  { id: '19', name: 'Феникс', rarity: 'exotic', value: 5000, icon: '🔥' },
+  { id: '20', name: 'Единорог', rarity: 'exotic', value: 5500, icon: '🦄' },
+  { id: '21', name: 'Дракон', rarity: 'exotic', value: 6000, icon: '🐉' },
+  { id: '22', name: 'Корона богов', rarity: 'divine', value: 15000, icon: '👑' },
+  { id: '23', name: 'Святой грааль', rarity: 'divine', value: 18000, icon: '🏺' },
+  { id: '24', name: 'Божественный свет', rarity: 'divine', value: 20000, icon: '✨' }
 ];
+
+const CaseOpeningRoulette = ({ onComplete, targetGift }: { onComplete: () => void; targetGift: Gift }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  useEffect(() => {
+    const rouletteGifts = [...ALL_GIFTS, ...ALL_GIFTS, ...ALL_GIFTS, ...ALL_GIFTS];
+    const targetIndex = rouletteGifts.findIndex(g => g.id === targetGift.id && g.rarity === targetGift.rarity);
+    const finalPosition = -(targetIndex * 160 - 400);
+
+    const duration = 3000;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      
+      setScrollPosition(finalPosition * easeOut);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setTimeout(onComplete, 500);
+      }
+    };
+
+    animate();
+  }, [targetGift, onComplete]);
+
+  const rouletteGifts = [...ALL_GIFTS, ...ALL_GIFTS, ...ALL_GIFTS, ...ALL_GIFTS];
+
+  return (
+    <div className="relative w-full h-48 bg-card/50 rounded-lg overflow-hidden border-2 border-primary/50">
+      <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-primary z-10 shadow-glow-gold" />
+      <div className="absolute left-1/2 -translate-x-1/2 -top-2 z-20">
+        <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[20px] border-t-primary drop-shadow-lg" />
+      </div>
+      
+      <div
+        ref={scrollRef}
+        className="flex items-center h-full gap-4 px-4"
+        style={{ transform: `translateX(${scrollPosition}px)` }}
+      >
+        {rouletteGifts.map((gift, index) => (
+          <div
+            key={`${gift.id}-${index}`}
+            className={`flex-shrink-0 w-32 h-32 ${RARITY_BG[gift.rarity]} rounded-lg border-2 flex flex-col items-center justify-center`}
+          >
+            <span className="text-5xl mb-2">{gift.icon}</span>
+            <p className={`text-xs font-semibold ${RARITY_COLORS[gift.rarity]} text-center`}>
+              {gift.name}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const UpgradeWheel = ({ onResult, successChance }: { onResult: (success: boolean) => void; successChance: number }) => {
+  const [rotation, setRotation] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const startSpin = () => {
+    if (isSpinning) return;
+    
+    setIsSpinning(true);
+    const success = Math.random() * 100 < successChance;
+    const successZoneStart = 0;
+    const successZoneSize = (successChance / 100) * 360;
+    
+    let targetAngle;
+    if (success) {
+      targetAngle = successZoneStart + Math.random() * successZoneSize;
+    } else {
+      targetAngle = successZoneStart + successZoneSize + Math.random() * (360 - successZoneSize);
+    }
+    
+    const spins = 5;
+    const finalRotation = spins * 360 + targetAngle;
+    
+    setRotation(finalRotation);
+    
+    setTimeout(() => {
+      setIsSpinning(false);
+      onResult(success);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    startSpin();
+  }, []);
+
+  const successZoneSize = (successChance / 100) * 360;
+
+  return (
+    <div className="relative w-80 h-80 mx-auto">
+      <div className="absolute inset-0 rounded-full border-4 border-primary/30 overflow-hidden">
+        <svg className="w-full h-full" style={{ transform: `rotate(${rotation}deg)`, transition: 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)' }}>
+          <circle cx="160" cy="160" r="160" fill="hsl(var(--destructive))" opacity="0.3" />
+          <path
+            d={`M 160 160 L 160 0 A 160 160 0 ${successZoneSize > 180 ? 1 : 0} 1 ${160 + 160 * Math.sin((successZoneSize * Math.PI) / 180)} ${160 - 160 * Math.cos((successZoneSize * Math.PI) / 180)} Z`}
+            fill="hsl(var(--rarity-legendary))"
+            opacity="0.5"
+          />
+        </svg>
+      </div>
+      
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-4 z-10">
+        <div className="relative">
+          <div className="w-0 h-0 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-t-[40px] border-t-primary drop-shadow-2xl animate-pulse" />
+          <div className="absolute inset-0 blur-lg bg-primary/50" />
+        </div>
+      </div>
+      
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center bg-card/90 backdrop-blur rounded-full w-32 h-32 flex items-center justify-center border-4 border-primary shadow-glow-gold">
+          <div>
+            <Icon name="Zap" size={32} className="mx-auto text-primary mb-1" />
+            <p className="text-xl font-bold text-primary">{successChance}%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Index() {
   const [stars, setStars] = useState(3000);
   const [inventory, setInventory] = useState<Gift[]>([]);
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [isOpening, setIsOpening] = useState(false);
+  const [showRoulette, setShowRoulette] = useState(false);
+  const [wonGift, setWonGift] = useState<Gift | null>(null);
   const [openedGift, setOpenedGift] = useState<Gift | null>(null);
   const [recentDrops] = useState<RecentDrop[]>([
-    { id: '1', playerName: 'Player123', gift: SAMPLE_GIFTS[7], timestamp: new Date(Date.now() - 30000) },
-    { id: '2', playerName: 'LuckyOne', gift: SAMPLE_GIFTS[5], timestamp: new Date(Date.now() - 60000) },
-    { id: '3', playerName: 'GiftHunter', gift: SAMPLE_GIFTS[4], timestamp: new Date(Date.now() - 120000) }
+    { id: '1', playerName: 'Player123', gift: ALL_GIFTS[21], timestamp: new Date(Date.now() - 30000) },
+    { id: '2', playerName: 'LuckyOne', gift: ALL_GIFTS[15], timestamp: new Date(Date.now() - 60000) },
+    { id: '3', playerName: 'GiftHunter', gift: ALL_GIFTS[12], timestamp: new Date(Date.now() - 120000) }
   ]);
   const [activeTab, setActiveTab] = useState('cases');
+  
+  const [selectedGiftForUpgrade, setSelectedGiftForUpgrade] = useState<Gift | null>(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [upgradeResult, setUpgradeResult] = useState<{ success: boolean; newGift?: Gift } | null>(null);
 
   const openCase = (caseItem: Case) => {
     if (stars < caseItem.price) return;
     
     setIsOpening(true);
+    setShowRoulette(true);
     setStars(stars - caseItem.price);
     
+    const randomGift = ALL_GIFTS[Math.floor(Math.random() * ALL_GIFTS.length)];
+    setWonGift(randomGift);
+  };
+
+  const handleRouletteComplete = () => {
+    setShowRoulette(false);
+    setIsOpening(false);
+    if (wonGift) {
+      setOpenedGift(wonGift);
+      setInventory([...inventory, wonGift]);
+    }
+    setSelectedCase(null);
+  };
+
+  const getUpgradeChance = (gift: Gift): number => {
+    const rarityIndex = RARITY_ORDER.indexOf(gift.rarity);
+    if (rarityIndex === RARITY_ORDER.length - 1) return 0;
+    
+    const baseChances = [70, 60, 50, 40, 30, 20, 15, 0];
+    return baseChances[rarityIndex];
+  };
+
+  const getNextRarityGift = (currentGift: Gift): Gift | null => {
+    const currentRarityIndex = RARITY_ORDER.indexOf(currentGift.rarity);
+    if (currentRarityIndex === RARITY_ORDER.length - 1) return null;
+    
+    const nextRarity = RARITY_ORDER[currentRarityIndex + 1];
+    const nextRarityGifts = ALL_GIFTS.filter(g => g.rarity === nextRarity);
+    return nextRarityGifts[Math.floor(Math.random() * nextRarityGifts.length)];
+  };
+
+  const startUpgrade = () => {
+    if (!selectedGiftForUpgrade) return;
+    setIsUpgrading(true);
+  };
+
+  const handleUpgradeResult = (success: boolean) => {
+    if (!selectedGiftForUpgrade) return;
+
     setTimeout(() => {
-      const randomGift = SAMPLE_GIFTS[Math.floor(Math.random() * SAMPLE_GIFTS.length)];
-      setOpenedGift(randomGift);
-      setInventory([...inventory, randomGift]);
-      setIsOpening(false);
-      setSelectedCase(null);
-    }, 2000);
+      if (success) {
+        const nextGift = getNextRarityGift(selectedGiftForUpgrade);
+        if (nextGift) {
+          const giftIndex = inventory.findIndex(g => g.id === selectedGiftForUpgrade.id && g.rarity === selectedGiftForUpgrade.rarity);
+          const newInventory = [...inventory];
+          newInventory.splice(giftIndex, 1);
+          newInventory.push(nextGift);
+          setInventory(newInventory);
+          setUpgradeResult({ success: true, newGift: nextGift });
+        }
+      } else {
+        const giftIndex = inventory.findIndex(g => g.id === selectedGiftForUpgrade.id && g.rarity === selectedGiftForUpgrade.rarity);
+        const newInventory = [...inventory];
+        newInventory.splice(giftIndex, 1);
+        setInventory(newInventory);
+        setUpgradeResult({ success: false });
+      }
+      setIsUpgrading(false);
+    }, 3200);
   };
 
   return (
@@ -268,39 +472,157 @@ export default function Index() {
                     <p className="text-muted-foreground">Улучши свои подарки с шансом получить более редкие</p>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-8 items-center mb-8">
-                    <div className="space-y-4">
-                      <p className="text-sm font-semibold text-center">Выбери подарок</p>
-                      <Card className="p-6 border-2 border-dashed border-muted hover:border-primary transition-colors cursor-pointer">
-                        <div className="text-center">
-                          <Icon name="Plus" size={48} className="mx-auto text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground mt-2">Выбрать из инвентаря</p>
+                  {!selectedGiftForUpgrade ? (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 text-center">Выбери подарок из инвентаря</h3>
+                      {inventory.length === 0 ? (
+                        <div className="text-center p-12">
+                          <Icon name="Package" size={64} className="mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">Сначала открой кейс!</p>
                         </div>
-                      </Card>
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <Icon name="ArrowRight" size={32} className="text-primary mb-2" />
-                      <p className="text-sm font-semibold mb-2">Шанс успеха</p>
-                      <Progress value={30} className="w-full mb-2" />
-                      <p className="text-xl font-bold text-primary">30%</p>
-                    </div>
-
-                    <div className="space-y-4">
-                      <p className="text-sm font-semibold text-center">Возможный результат</p>
-                      <Card className="p-6 bg-gradient-to-br from-legendary/20 to-card border-legendary">
-                        <div className="text-center">
-                          <span className="text-5xl">❓</span>
-                          <p className="text-sm text-legendary mt-2">Редкий подарок</p>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {inventory.map((gift, index) => {
+                            const chance = getUpgradeChance(gift);
+                            const canUpgrade = chance > 0;
+                            return (
+                              <Card
+                                key={`${gift.id}-${index}`}
+                                className={`p-4 ${RARITY_BG[gift.rarity]} border-2 transition-all cursor-pointer ${
+                                  canUpgrade ? 'hover:scale-105 hover:shadow-glow-gold' : 'opacity-50 cursor-not-allowed'
+                                }`}
+                                onClick={() => canUpgrade && setSelectedGiftForUpgrade(gift)}
+                              >
+                                <div className="text-center">
+                                  <span className="text-4xl mb-2 block">{gift.icon}</span>
+                                  <p className={`text-xs font-semibold ${RARITY_COLORS[gift.rarity]} mb-1`}>
+                                    {gift.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mb-2">{gift.value} ⭐</p>
+                                  {canUpgrade && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {chance}% шанс
+                                    </Badge>
+                                  )}
+                                </div>
+                              </Card>
+                            );
+                          })}
                         </div>
-                      </Card>
+                      )}
                     </div>
-                  </div>
+                  ) : !isUpgrading && !upgradeResult ? (
+                    <div className="space-y-8">
+                      <div className="grid grid-cols-3 gap-8 items-center">
+                        <div className="space-y-4">
+                          <p className="text-sm font-semibold text-center">Текущий подарок</p>
+                          <Card className={`p-6 ${RARITY_BG[selectedGiftForUpgrade.rarity]} border-2`}>
+                            <div className="text-center">
+                              <span className="text-6xl mb-2 block">{selectedGiftForUpgrade.icon}</span>
+                              <p className={`text-sm font-semibold ${RARITY_COLORS[selectedGiftForUpgrade.rarity]}`}>
+                                {selectedGiftForUpgrade.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {selectedGiftForUpgrade.value} ⭐
+                              </p>
+                            </div>
+                          </Card>
+                        </div>
 
-                  <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent shadow-glow-gold" disabled>
-                    <Icon name="Zap" size={20} className="mr-2" />
-                    Начать апгрейд
-                  </Button>
+                        <div className="flex flex-col items-center">
+                          <Icon name="ArrowRight" size={32} className="text-primary mb-2" />
+                          <p className="text-sm font-semibold mb-2">Шанс успеха</p>
+                          <Progress value={getUpgradeChance(selectedGiftForUpgrade)} className="w-full mb-2" />
+                          <p className="text-2xl font-bold text-primary">{getUpgradeChance(selectedGiftForUpgrade)}%</p>
+                        </div>
+
+                        <div className="space-y-4">
+                          <p className="text-sm font-semibold text-center">Возможный результат</p>
+                          {(() => {
+                            const nextGift = getNextRarityGift(selectedGiftForUpgrade);
+                            return nextGift ? (
+                              <Card className={`p-6 ${RARITY_BG[nextGift.rarity]} border-2`}>
+                                <div className="text-center">
+                                  <span className="text-6xl mb-2 block">{nextGift.icon}</span>
+                                  <p className={`text-sm font-semibold ${RARITY_COLORS[nextGift.rarity]}`}>
+                                    {nextGift.name}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {nextGift.value} ⭐
+                                  </p>
+                                </div>
+                              </Card>
+                            ) : null;
+                          })()}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <Button 
+                          size="lg" 
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => setSelectedGiftForUpgrade(null)}
+                        >
+                          Отмена
+                        </Button>
+                        <Button 
+                          size="lg" 
+                          className="flex-1 bg-gradient-to-r from-primary to-accent shadow-glow-gold"
+                          onClick={startUpgrade}
+                        >
+                          <Icon name="Zap" size={20} className="mr-2" />
+                          Начать апгрейд
+                        </Button>
+                      </div>
+                    </div>
+                  ) : isUpgrading ? (
+                    <div className="py-8">
+                      <UpgradeWheel 
+                        successChance={getUpgradeChance(selectedGiftForUpgrade)} 
+                        onResult={handleUpgradeResult}
+                      />
+                      <p className="text-center text-lg text-muted-foreground mt-8">
+                        Испытай свою удачу...
+                      </p>
+                    </div>
+                  ) : upgradeResult ? (
+                    <div className="text-center py-8 space-y-6">
+                      {upgradeResult.success && upgradeResult.newGift ? (
+                        <>
+                          <div className="animate-glow-pulse">
+                            <Icon name="Sparkles" size={64} className="mx-auto text-legendary mb-4" />
+                            <span className="text-9xl block mb-4">{upgradeResult.newGift.icon}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-3xl font-bold mb-2 text-legendary">Успешно!</h3>
+                            <p className={`text-xl font-semibold ${RARITY_COLORS[upgradeResult.newGift.rarity]}`}>
+                              {upgradeResult.newGift.name}
+                            </p>
+                            <p className="text-2xl font-bold text-primary mt-2">
+                              {upgradeResult.newGift.value} ⭐
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="X" size={64} className="mx-auto text-destructive mb-4" />
+                          <h3 className="text-3xl font-bold text-destructive">Неудача</h3>
+                          <p className="text-muted-foreground">Подарок потерян</p>
+                        </>
+                      )}
+                      <Button 
+                        size="lg" 
+                        className="w-full max-w-md mx-auto"
+                        onClick={() => {
+                          setSelectedGiftForUpgrade(null);
+                          setUpgradeResult(null);
+                        }}
+                      >
+                        Продолжить
+                      </Button>
+                    </div>
+                  ) : null}
                 </Card>
               </TabsContent>
 
@@ -365,7 +687,7 @@ export default function Index() {
         </main>
       </div>
 
-      <Dialog open={selectedCase !== null} onOpenChange={(open) => !open && setSelectedCase(null)}>
+      <Dialog open={selectedCase !== null && !showRoulette} onOpenChange={(open) => !open && setSelectedCase(null)}>
         <DialogContent className="max-w-md">
           {selectedCase && (
             <>
@@ -400,23 +722,30 @@ export default function Index() {
                       onClick={() => openCase(selectedCase)}
                       disabled={isOpening}
                     >
-                      {isOpening ? (
-                        <>
-                          <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                          Открываем...
-                        </>
-                      ) : (
-                        <>
-                          <Icon name="Gift" size={20} className="mr-2" />
-                          Открыть кейс
-                        </>
-                      )}
+                      <Icon name="Gift" size={20} className="mr-2" />
+                      Открыть кейс
                     </Button>
                   </div>
                 )}
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRoulette} onOpenChange={() => {}}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-center">Открываем кейс...</DialogTitle>
+          </DialogHeader>
+          <div className="py-8">
+            {wonGift && (
+              <CaseOpeningRoulette 
+                targetGift={wonGift} 
+                onComplete={handleRouletteComplete}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
